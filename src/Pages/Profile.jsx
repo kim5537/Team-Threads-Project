@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { auth, db } from "../firebase";
 import {
   collection,
@@ -7,7 +7,6 @@ import {
   orderBy,
   query,
   where,
-  documentId,
   getDocs,
 } from "firebase/firestore";
 import styled from "styled-components";
@@ -24,14 +23,10 @@ import ProfileEdit from "../Components/profile/ProfileEdit";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OtherBtnModal from "../Components/profile/OtherBtnModal";
 import { useAuth } from "../Contexts/AuthContext";
+import { el } from "date-fns/locale";
 
 const Wrapper = styled.div`
-  /* width: 100%; */
-  /* height: calc(100vh - 120px); */
   height: 100vh;
-  /* margin-top: 120px; */
-  /* overflow: hidden; */
-  /* z-index: -1; */
   @media (max-width: 768px) {
     height: 100vh;
     width: 100%;
@@ -44,21 +39,12 @@ const BoederWrapper = styled.div`
   justify-content: center;
   align-items: center;
   width: 680px;
-  /* position: fixed; */
   bottom: 0;
-  /* left: 50%; */
-  /* transform: translate(-50%); */
-  /* margin: 0; */
   height: calc(100vh - 120px);
-  /* height: 85%; */
   border-radius: 40px 40px 0px 0px;
-  /* overflow: hidden; */
   @media (max-width: 768px) {
     width: 100%;
-    /* bottom: 0; */
     border-radius: 0;
-    /* height: 100vh; */
-    /* height: calc(100% - 70px); */
     height: calc(100% - 70px);
 
     box-shadow: none;
@@ -240,7 +226,6 @@ const ButtonGroup = styled.div`
   justify-content: space-evenly;
   align-items: center;
   gap: 20px;
-  /* margin-bottom: 6px; */
   border-bottom: 1px solid rgba(204, 204, 204, 0.4);
 
   @media (max-width: 768px) {
@@ -358,33 +343,66 @@ const Profile = () => {
   }, [currentUser, navigate]);
 
   useEffect(() => {
-    setContentType("thresds");
-    filterList("thresds");
-  }, [navigate]);
-  // const location = useLocation();
-
-  const buttonCheck = () => {
-    if (user?.email === emailAdress) {
-      setEditbtn(true);
-    } else {
-      setEditbtn(false);
+    if (emailAdress) {
+      CheckProfile();
+      fetchComments();
+      if (profile.img) {
+        setAvarta(profile.img); // profile.img가 있을 경우 avatar에 반영
+      } else {
+        setAvarta("");
+      }
+      handleButtonClick("thresds");
     }
-  };
+  }, [emailAdress, profile.img]);
 
+  useEffect(() => {
+    let unsubscribe = null;
+    const fetchPosts = async () => {
+      const postsQuery = query(
+        collection(db, "contents"),
+        where("email", "==", emailAdress),
+        orderBy("createdAt", "desc"),
+        limit(15)
+      );
+      unsubscribe = onSnapshot(postsQuery, (snapshot) => {
+        const posts = snapshot.docs.map((doc) => {
+          const { createdAt, photos, videos, post, userId, username, email } =
+            doc.data();
+          return {
+            id: doc.id,
+            createdAt,
+            photos: photos || [],
+            videos: videos || [],
+            post,
+            userId,
+            username,
+            email,
+          };
+        });
+
+        setPosts(posts);
+      });
+    };
+    fetchPosts();
+
+    return () => {
+      unsubscribe && unsubscribe();
+    };
+  }, [, emailAdress]);
+
+  //이메일로 비교해서 db에 저장된 profile 데이터 비교 후 가져와 setProfile에 넣기기
   const CheckProfile = async () => {
     try {
       const profileQuery = query(
         collection(db, "profile"),
         where("userEmail", "==", emailAdress)
       );
+
       const unsubscribe = onSnapshot(profileQuery, (querySnapshot) => {
         //db에 firebase에 사람이 있다면 ?
         if (!querySnapshot.empty) {
           const profileDoc = querySnapshot.docs[0].data(); //이메일이 프로필db에 있는 사람의 데이터.
           const imgUrl = profileDoc.img;
-          // const imgUrl = ref(storage, `avatars/${profileDoc.userId}`);
-
-          // 에러
           setAvarta(imgUrl);
           //유저 정보가 있다면
           if (!profileDoc.empty) {
@@ -422,16 +440,12 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    CheckProfile();
-    buttonCheck();
-  }, [emailAdress]);
-
-  useEffect(() => {
     if (posts.length > 0) {
       filterList("thresds");
     }
   }, [posts]);
 
+  //이메일 정보로 content DB에 값 가져오기
   const fetchComments = async () => {
     try {
       // 이메일이 없으면 종료
@@ -470,95 +484,21 @@ const Profile = () => {
     } catch (error) {}
   };
 
+  //// 모달 모음 ////
+  //팔로우 클릭
   const onfollow = () => {
     setFollowModal((prev) => !prev);
-    //팔로우 클릭
   };
 
-  const onLinkPlus = () => {
-    setLinkModal((prev) => !prev);
-    //아이콘추가
-  };
-
+  //프로필수정모달
   const onProfileEdite = () => {
     setEditModal((prev) => !prev);
-    //프로필수정모달
   };
 
+  //프로필수정모달
   const onOtherbtn = () => {
     setOtherBtn((prev) => !prev);
-    //프로필수정모달
   };
-
-  useEffect(() => {
-    fetchComments();
-
-    let unsubscribe = null;
-    const fetchPosts = async () => {
-      const postsQuery = query(
-        collection(db, "contents"),
-        where("email", "==", emailAdress),
-        orderBy("createdAt", "desc"),
-        limit(15)
-      );
-      unsubscribe = onSnapshot(postsQuery, (snapshot) => {
-        const posts = snapshot.docs.map((doc) => {
-          const { createdAt, photos, videos, post, userId, username, email } =
-            doc.data();
-          return {
-            id: doc.id,
-            createdAt,
-            photos: photos || [],
-            videos: videos || [],
-            post,
-            userId,
-            username,
-            email,
-          };
-        });
-
-        setPosts(posts);
-      });
-    };
-    fetchPosts();
-
-    return () => {
-      unsubscribe && unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    let unsubscribe = null;
-    const fetchPosts = async () => {
-      const postsQuery = query(
-        collection(db, "contents"),
-        where("email", "==", emailAdress),
-        orderBy("createdAt", "desc"),
-        limit(15)
-      );
-      unsubscribe = onSnapshot(postsQuery, (snapshot) => {
-        const posts = snapshot.docs.map((doc) => {
-          const { createdAt, photos, videos, post, userId, username, email } =
-            doc.data();
-          return {
-            id: doc.id,
-            createdAt,
-            photos: photos || [],
-            videos: videos || [],
-            post,
-            userId,
-            username,
-            email,
-          };
-        });
-        setPosts(posts);
-      });
-    };
-    fetchPosts();
-    return () => {
-      unsubscribe && unsubscribe();
-    };
-  }, []);
 
   const handleProfileChange = (updatedProfile) => {
     setProfile(updatedProfile);
@@ -587,12 +527,9 @@ const Profile = () => {
 
   const handleScroll = () => {
     const element = wrapperRef.current;
-    // 스크롤이 가장 위에 도달했는지 확인
     if (element.scrollTop === 0) {
-      // 텐션감을 위한 애니메이션 트리거
       setIsBouncing(true);
 
-      // 0.5초 후에 애니메이션 클래스 제거
       setTimeout(() => {
         setIsBouncing(false);
       }, 500);
@@ -615,11 +552,6 @@ const Profile = () => {
       ) : (
         <FollowModal open={false} close={onfollow} profile={profile} />
       )}
-      {/* {linkmodal ? (
-        <LinkPluse open={true} close={onLinkPlus} />
-      ) : (
-        <LinkPluse open={false} close={onLinkPlus} />
-      )} */}
       {editmodal ? (
         <ProfileEdit
           open={true}

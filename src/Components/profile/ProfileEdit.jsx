@@ -241,6 +241,13 @@ const ProfileEdit = React.memo(({ open, close, profile, onProfileChange }) => {
     setProfileData({ ...profile });
   }, [profile]);
 
+  useEffect(() => {
+    setProfileData((prev) => ({
+      ...prev,
+      img: avatar,
+    }));
+  }, [avatar]);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue =
