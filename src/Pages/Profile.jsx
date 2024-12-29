@@ -357,6 +357,10 @@ const Profile = () => {
     }
   }, [currentUser, navigate]);
 
+  useEffect(() => {
+    setContentType("thresds");
+    filterList("thresds");
+  }, [navigate]);
   // const location = useLocation();
 
   const buttonCheck = () => {

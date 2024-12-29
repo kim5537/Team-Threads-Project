@@ -4,14 +4,14 @@ import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDIS62fGhIygp-74HK95OBsVyW3aoD-yEU",
-  authDomain: "snsflatform-241009.firebaseapp.com",
-  projectId: "snsflatform-241009",
-  storageBucket: "snsflatform-241009.appspot.com",
-  messagingSenderId: "207260495385",
-  appId: "1:207260495385:web:585b5678f94800ebc68488",
+  apiKey: "AIzaSyAGa6DvwiQM2l9vtk3147rOvm4jnHLm_ig",
+  authDomain: "thread-team.firebaseapp.com",
+  projectId: "thread-team",
+  storageBucket: "thread-team.firebasestorage.app",
+  messagingSenderId: "506336628483",
+  appId: "1:506336628483:web:673e4dcb2daa0c4e292336",
 };
-// Initialize Firebase
+
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
