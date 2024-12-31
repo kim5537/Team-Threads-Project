@@ -379,7 +379,6 @@ const Profile = () => {
             email,
           };
         });
-
         setPosts(posts);
       });
     };

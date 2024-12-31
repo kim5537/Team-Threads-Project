@@ -324,11 +324,11 @@ const Sidebar = () => {
     <>
       <Aside>
         <BtnWrapper>
-          {isHomePage && ( // 홈 페이지에서만 PinBtn 렌더링
+          {/* {isHomePage && ( // 홈 페이지에서만 PinBtn 렌더링
             <PinBtn onClick={openPinModal}>
               <FixIcon fill={"#bababa"} />
             </PinBtn>
-          )}
+          )} */}
           <SetBtn onClick={openModal}>
             <EtcIcon fill={"#bababa"} />
           </SetBtn>

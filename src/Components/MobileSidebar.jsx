@@ -8,41 +8,22 @@ import ReportModal from "./Login/ReportModal";
 
 import {
   ArrowIcon,
-  EtcIcon,
-  FixIcon,
   ThemeLightIcon,
   ThemeDarkIcon,
   MobileMenu,
 } from "./Common/Icon";
 import { motion } from "framer-motion";
 
-const Aside = styled.aside`
-  /* position: absolute; */
-  /* top: 50%; */
-  /* right: 0px; */
-  /* transform: translateY(-50%); */
-`;
+const Aside = styled.aside``;
 
 const BtnWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* @media (max-width: 768px) {
-    display: none; // 768px 이상의 화면에서는 숨기기
-  } */
 `;
 
 const SetBtn = styled.button`
-  /* width: 60px;
-  height: 60px; */
-  /* box-shadow: ${(props) => props.theme.bordershadow};
-  border: 2px solid ${(props) => props.theme.borderstroke}; */
-  /* border-color: ${(props) => props.theme.borderstroke};
-  border-style: none;
-  border-width: 1px; */
-  /* border-radius: 50%; */
   cursor: pointer;
-  /* background-color: ${(props) => props.theme.bodyBg}; */
   color: ${(props) => props.theme.fontcolor};
   font-size: 0.6rem;
   border: none;
@@ -60,8 +41,7 @@ const PinBtn = styled.button`
   height: 60px;
   box-shadow: ${(props) => props.theme.bordershadow};
   border: 2px solid ${(props) => props.theme.borderstroke};
-  /* border-color: ${(props) => props.theme.borderstroke};
-  border-style: none; */
+
   border-radius: 50%;
   cursor: pointer;
   background-color: ${(props) => props.theme.bodyBg};
