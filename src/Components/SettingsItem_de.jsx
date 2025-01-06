@@ -35,32 +35,6 @@ const SettingWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  @media (max-width: 768px) {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    border-radius: 0;
-    gap: 1px;
-    /* height: calc(100% + 70px);
-    overflow: scroll; */
-    margin-bottom: 70px;
-  }
-`;
-
-const Contains = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  /* overflow: visible; */
-  /* justify-content: space-between; */
-  @media (max-width: 768px) {
-    overflow-y: scroll;
-    justify-content: start;
-    /* height: calc(100% + 700px); */
-  }
 `;
 
 const Wrapper = styled.div`
@@ -68,30 +42,17 @@ const Wrapper = styled.div`
   justify-content: center;
   align-items: center;
   @media (max-width: 768px) {
-    padding: 0;
-    height: 100%;
-  }
-`;
-const Wrapper2 = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #999;
-  font-size: 0.8rem;
-  /* border: 1px solid #f00; */
-  @media (max-width: 768px) {
-    padding: 0;
-    height: 100px;
-    margin: 4px 0;
+    padding: 20px 0;
   }
 `;
 
 const SettingsInner = styled.div`
-  width: 520px; // 수정!
+  width: 558.67px; // 수정!
   height: 100%;
   padding: 20px 0;
   background: ${(props) => props.theme.borderColor};
   margin-top: 30px;
+  /* border: 1px solid rgb(213, 213, 213); */
   border: none;
   border-radius: 20px;
   display: flex;
@@ -100,26 +61,28 @@ const SettingsInner = styled.div`
   box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
   @media (max-width: 768px) {
     width: 100%;
+    height: calc(100vh - 70px);
     margin: 0;
     border-radius: 0;
   }
 `;
 const AlertInner = styled.div`
-  width: 100%; // 수정!
-  height: inherit;
+  width: 558.67px; // 수정!
+  height: 100%;
   padding: 20px 0;
   background: ${(props) => props.theme.borderColor};
+  /* border: 1px solid rgb(213, 213, 213); */
   border: none;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
   @media (max-width: 768px) {
     width: 100%;
-    height: 100%;
+    height: calc(100vh - 70px);
     margin: 0;
     border-radius: 0;
-    padding: 15px 20px;
   }
 `;
 
@@ -131,7 +94,7 @@ const SettingMenu = styled.div`
   height: 48px;
   -webkit-tap-highlight-color: transparent;
   @media (max-width: 768px) {
-    /* margin-bottom: 12px; */
+    margin-bottom: 12px;
   }
 `;
 
@@ -179,6 +142,7 @@ const OtherPivInfo = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: auto;
   padding: 8px 0px;
   padding: 0 24px;
 `;
@@ -201,7 +165,7 @@ const PrivacySettings = styled.div`
   flex-direction: column;
   justify-content: start;
   width: 100%;
-  margin: 10px auto;
+  margin: 8px auto;
   padding: 0 20px;
   gap: 20px;
 `;
@@ -239,12 +203,8 @@ const AccountSettings = styled.div`
   margin: 8px auto;
   /* padding: 0 24px; */
   gap: 20px;
-  /* overflow: visible; */
   @media (max-width: 768px) {
     padding: 0;
-    width: 100%;
-    gap: 10px;
-    /* overflow: auto; */
   }
 `;
 const AccountContents = styled.div`
@@ -253,7 +213,6 @@ const AccountContents = styled.div`
   text-align: center;
   width: 100%;
   gap: 20px;
-  /* overflow: visible; */
   @media (max-width: 768px) {
     width: 360px;
   }
@@ -378,17 +337,15 @@ export const SelectLayout = styled.div`
 
 const SelectDirection = styled.div`
   display: flex;
-  gap: ${({ isMobile }) => (isMobile ? "6px" : "10px")};
+  flex-direction: ${({ isMobile }) =>
+    isMobile ? "column" : "row"}; /* 'none'에서 'row'로 변경 */
+  gap: ${({ isMobile }) => (isMobile ? "6px" : "6px")};
 `;
 
 // 아이콘 눌렀을 때 링크로 이동
 export const IconLink = styled.a`
   height: 20px;
   text-align: end;
-  /* padding-right: 10px; */
-`;
-export const TextLink = styled.a`
-  display: inline-block;
   /* padding-right: 10px; */
 `;
 
@@ -418,14 +375,10 @@ const SettingsItem_de = () => {
   // 숨겨진 단어 모달 상태
   const [isHiddenWordModalOpen, setHiddenWordModalOpen] = useState(false);
   const [selectedOption1, setSelectedOption1] = useState("가려진 섹션 설정");
-  const [option1, setOption1] = useState("불쾌한 단어");
   const [selectedOption2, setSelectedOption2] = useState("맞춤 단어 설정");
-  const [option2, setOption2] = useState("맞춤 단어");
   const [isOption1Selected, setIsOption1Selected] = useState(false);
   const [isOption2Selected, setIsOption2Selected] = useState(false);
-  const alertHandle = () => {
-    window.alert("해당 요소는 모달 또한 제작 되어 있지 않습니다.");
-  };
+
   const openHiddenWordModal = () => {
     setHiddenWordModalOpen(true);
     // 모달 열 때 선택 상태 초기화
@@ -434,47 +387,24 @@ const SettingsItem_de = () => {
   };
 
   const closeHiddenWordModal = () => {
-    if (isOption1Selected != null && isOption2Selected != null) {
+    if (isOption1Selected && isOption2Selected) {
       setHiddenWordModalOpen(false);
     }
-    // setHiddenWordModalOpen(false);
   };
 
   const handleSelectOption = (option) => {
     // 선택된 옵션에 따라 상태 업데이트
-
     if (option === "가려진 섹션 설정" || option === "가려진 섹션 해제") {
       setSelectedOption1(option);
-      if (option === "가려진 섹션 설정") {
-        setOption1("불쾌한 단어 필터");
-      } else if (option === "가려진 섹션 해제") {
-        setOption1("");
-      }
       setIsOption1Selected(true); // 첫 번째 옵션 선택됨
     } else {
       setSelectedOption2(option);
-      if (option === "맞춤 단어 설정") {
-        setOption2("맞춤 단어");
-      } else if (option === "맞춤 단어 해제") {
-        setOption2("");
-      }
       setIsOption2Selected(true); // 두 번째 옵션 선택됨
     }
 
     // 두 옵션이 모두 선택된 경우 모달 닫기
-    // closeHiddenWordModal(); // 선택 후 항상 닫기 함수 호출
+    closeHiddenWordModal(); // 선택 후 항상 닫기 함수 호출
   };
-
-  // if (option === "가려진 섹션 설정") {
-  //   text = "불쾌한 단어 필터";
-  // } else if (option === "가려진 섹션 해제") {
-  //   text = "";
-  // }
-  // if (option === "맞춤 단어 설정") {
-  //   text2 = "맞춤 단어";
-  // } else if (option === "맞춤 단어 해제") {
-  //   text2 = "";
-  // }
 
   const closeModals = () => {
     setMentionModalOpen(false);
@@ -564,96 +494,260 @@ const SettingsItem_de = () => {
               />
             </SettingMove>
           </SettingMenu>
-          <Contains className="contens">
-            {/* 현재 활성화된 탭에 따라 다른 내용을 렌더링 */}
-            {activeTab === "privacy" && (
-              <PrivacySettings isSmallScreen={isSmallScreen}>
+
+          {/* 현재 활성화된 탭에 따라 다른 내용을 렌더링 */}
+          {activeTab === "privacy" && (
+            <PrivacySettings isSmallScreen={isSmallScreen}>
+              <PrivacyProfile>
+                <Icon>
+                  <LockIcon width={"18px"} />
+                </Icon>
+                <PrivacyAutoLayout>
+                  <PrivacyTitle>비공개 프로필</PrivacyTitle>
+                  {/* 토글 추가 */}
+                  <Toggle />
+                </PrivacyAutoLayout>
+              </PrivacyProfile>
+              <PrivacyProfile>
+                <Icon>
+                  <Thread100Icon width={"20px"} fill={"black"} />
+                </Icon>
+                <PrivacyAutoLayout>
+                  <PrivacyTitle>언급</PrivacyTitle>
+                  <SelectLayout>
+                    <SelectedText>{selectedOption}</SelectedText>
+                    <IconStroke onClick={openMentionModal}>
+                      <RightArrowIcon fill={"gray"} width={"12px"} />
+                    </IconStroke>
+                  </SelectLayout>
+                </PrivacyAutoLayout>
+              </PrivacyProfile>
+              <PrivacyProfile>
+                <Icon>
+                  <OnlineStatusIcon width={"20px"} fill={"black"} />
+                </Icon>
+                <PrivacyAutoLayout>
+                  <PrivacyTitle>온라인 상태</PrivacyTitle>
+                  <SelectLayout>
+                    <SelectedText>{selectedOption3}</SelectedText>
+                    <IconStroke onClick={openOnlineStatusModal}>
+                      <RightArrowIcon fill={"gray"} width={"12px"} />
+                    </IconStroke>
+                  </SelectLayout>
+                </PrivacyAutoLayout>
+              </PrivacyProfile>
+              <PrivacyProfile>
+                <Icon>
+                  <EyeCloseIcon width={"24px"} />
+                </Icon>
+                <PrivacyAutoLayout>
+                  <PrivacyTitle>숨겨진 단어</PrivacyTitle>
+                  <SelectLayout>
+                    <SelectDirection isMobile={isMobile}>
+                      <SelectedText>{selectedOption1}</SelectedText>
+                      <SelectedText>{selectedOption2}</SelectedText>
+                    </SelectDirection>
+                    <IconStroke onClick={openHiddenWordModal}>
+                      <RightArrowIcon fill={"gray"} width={"12px"} />
+                    </IconStroke>
+                  </SelectLayout>
+                </PrivacyAutoLayout>
+              </PrivacyProfile>
+              <Line />
+              {/* 기타 개인정보 설정  */}
+              <OtherSettings>
+                <OtherPivInfo>
+                  <OtherTitle>기타 개인정보 설정</OtherTitle>
+                  <OtherInfo>
+                    제한과 같은 일부 설정은 Threads 및 Instagram 모두에 적용되며
+                    Instagram에서 관리할 수 있습니다.
+                  </OtherInfo>
+                </OtherPivInfo>
                 <PrivacyProfile>
                   <Icon>
-                    <LockIcon width={"18px"} />
+                    <IconRadius>
+                      <CloseIcon width={"10px"} fill={"black"} />
+                    </IconRadius>
                   </Icon>
-                  <PrivacyAutoLayout>
-                    <PrivacyTitle>비공개 프로필</PrivacyTitle>
-                    {/* 토글 추가 */}
-                    <Toggle />
-                  </PrivacyAutoLayout>
+                  <ContentAutoLayout>
+                    <PrivacyTitle>차단된 프로필</PrivacyTitle>
+                    <IconLink
+                      href="https://www.instagram.com/accounts/blocked_accounts/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ShareIconNew
+                        width={"18px"}
+                        stroke="#999"
+                        strokeWidth="2"
+                      />
+                    </IconLink>
+                  </ContentAutoLayout>
                 </PrivacyProfile>
                 <PrivacyProfile>
-                  <Icon>
-                    <Thread100Icon width={"20px"} fill={"black"} />
-                  </Icon>
-                  <PrivacyAutoLayout>
-                    <PrivacyTitle onClick={openMentionModal}>언급</PrivacyTitle>
-                    <SelectLayout onClick={openMentionModal}>
-                      <SelectedText>{selectedOption}</SelectedText>
+                  <IconStroke>
+                    <NotHeartIcon width={"20px"} fill={"black"} />
+                  </IconStroke>
+                  <ContentAutoLayout>
+                    <PrivacyTitle>좋아요 수 및 공유 수 숨기기</PrivacyTitle>
+                    <IconLink
+                      href="https://www.instagram.com/accounts/like_count/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ShareIconNew
+                        width={"18px"}
+                        stroke="#999"
+                        strokeWidth="2"
+                      />
+                    </IconLink>
+                  </ContentAutoLayout>
+                </PrivacyProfile>
+              </OtherSettings>
+            </PrivacySettings>
+          )}
+
+          {activeTab === "account" && (
+            <OutherPrivacy isSmallScreen={isSmallScreen}>
+              {/* 계정 탭의 내용 */}
+              <AccountSettings>
+                <AccountContents>
+                  <PrivacyProfile>
+                    <IconStroke>
+                      <CloseLockIcon width={"20px"} fill={"black"} />
+                    </IconStroke>
+                    <ContentAutoLayout>
+                      <AccountTitle>웹 사이트 권한</AccountTitle>
+                      <IconStroke
+                        onClick={() => setAccountSettingModalOpen(true)}
+                      >
+                        <RightArrowIcon fill={"gray"} width={"12px"} />
+                      </IconStroke>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <Icon>
+                      <DeleteProfileIcon width={"22px"} fill={"black"} />
+                    </Icon>
+                    <ContentAutoLayout>
+                      <AccountTitle>프로필 비활성화 또는 삭제</AccountTitle>
+                      <IconStroke onClick={() => setDeactivateModalOpen(true)}>
+                        <RightArrowIcon fill={"gray"} width={"12px"} />
+                      </IconStroke>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <IconRadius>
+                      <EalthIcon width={"22px"} />
+                    </IconRadius>
+                    <ContentAutoLayout>
+                      <AccountTitle>페비더스 공유</AccountTitle>
                       <IconStroke>
                         <RightArrowIcon fill={"gray"} width={"12px"} />
                       </IconStroke>
-                    </SelectLayout>
-                  </PrivacyAutoLayout>
-                </PrivacyProfile>
-                <PrivacyProfile>
-                  <Icon>
-                    <OnlineStatusIcon width={"20px"} fill={"black"} />
-                  </Icon>
-                  <PrivacyAutoLayout>
-                    <PrivacyTitle onClick={openOnlineStatusModal}>
-                      온라인 상태
-                    </PrivacyTitle>
-                    <SelectLayout onClick={openOnlineStatusModal}>
-                      <SelectedText>{selectedOption3}</SelectedText>
-                      <IconStroke>
-                        <RightArrowIcon fill={"gray"} width={"12px"} />
-                      </IconStroke>
-                    </SelectLayout>
-                  </PrivacyAutoLayout>
-                </PrivacyProfile>
-                <PrivacyProfile>
-                  <Icon>
-                    <EyeCloseIcon width={"24px"} />
-                  </Icon>
-                  <PrivacyAutoLayout>
-                    <PrivacyTitle onClick={openHiddenWordModal}>
-                      숨겨진 단어
-                    </PrivacyTitle>
-                    <SelectLayout onClick={openHiddenWordModal}>
-                      <SelectDirection isMobile={isMobile}>
-                        <SelectedText>{option1}</SelectedText>
-                        <SelectedText>{option2}</SelectedText>
-                      </SelectDirection>
-                      <IconStroke>
-                        <RightArrowIcon fill={"gray"} width={"12px"} />
-                      </IconStroke>
-                    </SelectLayout>
-                  </PrivacyAutoLayout>
-                </PrivacyProfile>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                </AccountContents>
                 <Line />
-                {/* 기타 개인정보 설정  */}
                 <OtherSettings>
                   <OtherPivInfo>
-                    <OtherTitle>기타 개인정보 설정</OtherTitle>
+                    <OtherTitle>기타 계정 설정</OtherTitle>
                     <OtherInfo>
-                      제한과 같은 일부 설정은 Threads 및 Instagram 모두에
-                      적용되며 Instagram에서 관리할 수 있습니다.
+                      사용자 이름과 비밀번호 같은 일부 설정은 Threads 및
+                      Instagram 모두에 적용되며 Instagram에서 관리할 수
+                      있습니다.
                     </OtherInfo>
                   </OtherPivInfo>
                   <PrivacyProfile>
                     <Icon>
-                      <IconRadius>
-                        <CloseIcon width={"10px"} fill={"black"} />
-                      </IconRadius>
+                      <IconLink>
+                        <PersonalInfoIcon
+                          width={"30px"}
+                          height={"30px"}
+                          fill={"black"}
+                        />
+                      </IconLink>
                     </Icon>
                     <ContentAutoLayout>
-                      <TextLink
-                        href="https://www.instagram.com/accounts/blocked_accounts/"
+                      <PersonalInfoTitle>개인정보</PersonalInfoTitle>
+                      <IconLink
+                        href="https://accountscenter.instagram.com/personal_info/"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {" "}
-                        <PrivacyTitle>차단된 프로필</PrivacyTitle>
-                      </TextLink>
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <Icon>
+                      <FamilyIcon style={{ width: "20px", height: "20px" }} />
+                    </Icon>
+                    <ContentAutoLayout>
+                      <PrivacyTitle>관리 감독</PrivacyTitle>
                       <IconLink
-                        href="https://www.instagram.com/accounts/blocked_accounts/"
+                        href="https://familycenter.instagram.com/accounts/17841452333493991/?entrypoint=supervision_web&fc_session_id=b427b3a2-c47f-4a18-9bc0-27d6d0a83683&account_type=INSTAGRAM&is_home_e"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <Icon>
+                      <SecurityIcon style={{ width: "20px", height: "20px" }} />
+                    </Icon>
+                    <ContentAutoLayout>
+                      <PrivacyTitle>보안</PrivacyTitle>
+                      <IconLink
+                        href="https://accountscenter.instagram.com/password_and_security/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <Icon>
+                      <AccountStatusIcon width={"22px"} fill={"black"} />
+                    </Icon>
+                    <ContentAutoLayout>
+                      <PrivacyTitle>계정 상태</PrivacyTitle>
+                      <IconLink
+                        href="https://accountscenter.instagram.com/password_and_security/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <Icon>
+                      <InfoDownIcon width={"20px"} fill={"black"} />
+                    </Icon>
+                    <ContentAutoLayout>
+                      <PrivacyTitle>내 정보 다운로드</PrivacyTitle>
+                      <IconLink
+                        href="https://accountscenter.instagram.com/info_and_permissions/dyi/"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -670,16 +764,9 @@ const SettingsItem_de = () => {
                       <NotHeartIcon width={"20px"} fill={"black"} />
                     </IconStroke>
                     <ContentAutoLayout>
-                      <TextLink
-                        href="https://www.instagram.com/accounts/like_count/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {" "}
-                        <PrivacyTitle>좋아요 수 및 공유 수 숨기기</PrivacyTitle>
-                      </TextLink>
+                      <PrivacyTitle>내 정보 전송</PrivacyTitle>
                       <IconLink
-                        href="https://www.instagram.com/accounts/like_count/"
+                        href="https://accountscenter.instagram.com/info_and_permissions/tyi/"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -692,427 +779,150 @@ const SettingsItem_de = () => {
                     </ContentAutoLayout>
                   </PrivacyProfile>
                 </OtherSettings>
-              </PrivacySettings>
-            )}
+              </AccountSettings>
+            </OutherPrivacy>
+          )}
 
-            {activeTab === "account" && (
-              <OutherPrivacy isSmallScreen={isSmallScreen}>
-                {/* 계정 탭의 내용 */}
-                <AccountSettings>
-                  <AccountContents>
-                    <PrivacyProfile>
+          {activeTab === "help" && (
+            <OutherPrivacy>
+              {/* 도움말 탭의 내용 */}
+              <AccountSettings>
+                <AccountContents>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>개인정보 보호 및 보안 도움말</HelpTitle>
                       <IconStroke>
-                        <CloseLockIcon width={"20px"} fill={"black"} />
+                        <RightArrowIcon fill={"gray"} width={"12px"} />
                       </IconStroke>
-                      <ContentAutoLayout>
-                        <AccountTitle
-                          onClick={() => setAccountSettingModalOpen(true)}
-                        >
-                          웹 사이트 권한
-                        </AccountTitle>
-                        <IconStroke
-                          onClick={() => setAccountSettingModalOpen(true)}
-                        >
-                          <RightArrowIcon fill={"gray"} width={"12px"} />
-                        </IconStroke>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <Icon>
-                        <DeleteProfileIcon width={"22px"} fill={"black"} />
-                      </Icon>
-                      <ContentAutoLayout>
-                        <AccountTitle
-                          onClick={() => setDeactivateModalOpen(true)}
-                        >
-                          프로필 비활성화 또는 삭제
-                        </AccountTitle>
-                        <IconStroke
-                          onClick={() => setDeactivateModalOpen(true)}
-                        >
-                          <RightArrowIcon fill={"gray"} width={"12px"} />
-                        </IconStroke>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <IconRadius>
-                        <EalthIcon width={"22px"} />
-                      </IconRadius>
-                      <ContentAutoLayout>
-                        <AccountTitle onClick={alertHandle}>
-                          페비더스 공유
-                        </AccountTitle>
-                        <IconStroke>
-                          <RightArrowIcon fill={"gray"} width={"12px"} />
-                        </IconStroke>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                  </AccountContents>
-                  <Line />
-                  <OtherSettings>
-                    <OtherPivInfo>
-                      <OtherTitle>기타 계정 설정</OtherTitle>
-                      <OtherInfo>
-                        사용자 이름과 비밀번호 같은 일부 설정은 Threads 및
-                        Instagram 모두에 적용되며 Instagram에서 관리할 수
-                        있습니다.
-                      </OtherInfo>
-                    </OtherPivInfo>
-                    <PrivacyProfile>
-                      <Icon>
-                        <IconLink>
-                          <PersonalInfoIcon
-                            width={"30px"}
-                            height={"30px"}
-                            fill={"black"}
-                          />
-                        </IconLink>
-                      </Icon>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://accountscenter.instagram.com/personal_info/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {" "}
-                          <PersonalInfoTitle>개인정보</PersonalInfoTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://accountscenter.instagram.com/personal_info/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <Icon>
-                        <FamilyIcon style={{ width: "20px", height: "20px" }} />
-                      </Icon>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://familycenter.instagram.com/accounts/17841452333493991/?entrypoint=supervision_web&fc_session_id=b427b3a2-c47f-4a18-9bc0-27d6d0a83683&account_type=INSTAGRAM&is_home_e"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {" "}
-                          <PrivacyTitle>관리 감독</PrivacyTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://familycenter.instagram.com/accounts/17841452333493991/?entrypoint=supervision_web&fc_session_id=b427b3a2-c47f-4a18-9bc0-27d6d0a83683&account_type=INSTAGRAM&is_home_e"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <Icon>
-                        <SecurityIcon
-                          style={{ width: "20px", height: "20px" }}
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>지원 요청</HelpTitle>
+                      <IconStroke>
+                        <RightArrowIcon fill={"gray"} width={"12px"} />
+                      </IconStroke>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                </AccountContents>
+                <Line />
+                <OtherSettings>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>고객센터</HelpTitle>
+                      <IconLink
+                        href="https://help.instagram.com/179980294969821/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
                         />
-                      </Icon>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://accountscenter.instagram.com/password_and_security/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {" "}
-                          <PrivacyTitle>보안</PrivacyTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://accountscenter.instagram.com/password_and_security/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <Icon>
-                        <AccountStatusIcon width={"22px"} fill={"black"} />
-                      </Icon>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://accountscenter.instagram.com/password_and_security/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <PrivacyTitle>계정 상태</PrivacyTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://accountscenter.instagram.com/password_and_security/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <Icon>
-                        <InfoDownIcon width={"20px"} fill={"black"} />
-                      </Icon>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://accountscenter.instagram.com/info_and_permissions/dyi/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <PrivacyTitle>내 정보 다운로드</PrivacyTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://accountscenter.instagram.com/info_and_permissions/dyi/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <IconStroke>
-                        <NotHeartIcon width={"20px"} fill={"black"} />
-                      </IconStroke>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://accountscenter.instagram.com/info_and_permissions/tyi/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {" "}
-                          <PrivacyTitle>내 정보 전송</PrivacyTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://accountscenter.instagram.com/info_and_permissions/tyi/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                  </OtherSettings>
-                </AccountSettings>
-              </OutherPrivacy>
-            )}
-
-            {activeTab === "help" && (
-              <OutherPrivacy>
-                {/* 도움말 탭의 내용 */}
-                <AccountSettings>
-                  <AccountContents>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <HelpTitle>개인정보 보호 및 보안 도움말</HelpTitle>
-                        <IconStroke>
-                          <RightArrowIcon fill={"gray"} width={"12px"} />
-                        </IconStroke>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <HelpTitle>지원 요청</HelpTitle>
-                        <IconStroke>
-                          <RightArrowIcon fill={"gray"} width={"12px"} />
-                        </IconStroke>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                  </AccountContents>
-                  <Line />
-                  <OtherSettings>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://help.instagram.com/179980294969821/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <HelpTitle>고객센터</HelpTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://help.instagram.com/179980294969821/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://www.facebook.com/privacy/policy/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <HelpTitle>Meta 개인정보처리방침</HelpTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://www.facebook.com/privacy/policy/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://help.instagram.com/581066165581870"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <HelpTitle>Meta 이용약관</HelpTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://help.instagram.com/581066165581870"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://help.instagram.com/515230437301944"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <HelpTitle>Threads 추가 개인정보처리방침</HelpTitle>{" "}
-                        </TextLink>
-                        <IconLink
-                          href="https://help.instagram.com/515230437301944"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://help.instagram.com/769983657850450"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <HelpTitle>Threads 이용 약관</HelpTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://help.instagram.com/769983657850450"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://privacycenter.instagram.com/policies/cookies/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <HelpTitle>쿠키 정책</HelpTitle>{" "}
-                        </TextLink>
-                        <IconLink
-                          href="https://privacycenter.instagram.com/policies/cookies/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                    <PrivacyProfile>
-                      <ContentAutoLayout>
-                        <TextLink
-                          href="https://www.facebook.com/privacy/guide/fediverse/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <HelpTitle>페디버스 가이드</HelpTitle>
-                        </TextLink>
-                        <IconLink
-                          href="https://www.facebook.com/privacy/guide/fediverse/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ShareIconNew
-                            width={"18px"}
-                            stroke="#999"
-                            strokeWidth="2"
-                          />
-                        </IconLink>
-                      </ContentAutoLayout>
-                    </PrivacyProfile>
-                  </OtherSettings>
-                </AccountSettings>
-              </OutherPrivacy>
-            )}
-            <Wrapper2>
-              <AlertInner>
-                해당 페이지는 UI만 작업 되어 있는 페이지입니다.
-              </AlertInner>
-            </Wrapper2>
-          </Contains>
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>Meta 개인정보처리방침</HelpTitle>
+                      <IconLink
+                        href="https://www.facebook.com/privacy/policy/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>Meta 이용약관</HelpTitle>
+                      <IconLink
+                        href="https://help.instagram.com/581066165581870"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>Threads 추가 개인정보처리방침</HelpTitle>
+                      <IconLink
+                        href="https://help.instagram.com/515230437301944"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>Threads 이용 약관</HelpTitle>
+                      <IconLink
+                        href="https://help.instagram.com/769983657850450"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>쿠키 정책</HelpTitle>
+                      <IconLink
+                        href="https://privacycenter.instagram.com/policies/cookies/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                  <PrivacyProfile>
+                    <ContentAutoLayout>
+                      <HelpTitle>페디버스 가이드</HelpTitle>
+                      <IconLink
+                        href="https://www.facebook.com/privacy/guide/fediverse/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ShareIconNew
+                          width={"18px"}
+                          stroke="#999"
+                          strokeWidth="2"
+                        />
+                      </IconLink>
+                    </ContentAutoLayout>
+                  </PrivacyProfile>
+                </OtherSettings>
+              </AccountSettings>
+            </OutherPrivacy>
+          )}
         </SettingsInner>
         {/* 모달은 PrivacyProfile 바깥에 위치 */}
         {isMentionModalOpen && (
@@ -1147,6 +957,11 @@ const SettingsItem_de = () => {
         {isDeactivateModalOpen && (
           <DeactivateModal onClose={() => setDeactivateModalOpen(false)} />
         )}
+      </Wrapper>
+      <Wrapper>
+        <AlertInner>
+          해당 페이지는 기능없이 UI만 작업 되어 있는 페이지입니다.
+        </AlertInner>
       </Wrapper>
     </SettingWrapper>
   );

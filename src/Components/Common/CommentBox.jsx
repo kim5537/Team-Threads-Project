@@ -19,10 +19,9 @@ const CommentBox = ({ username }) => {
       <textarea
         value={comment}
         onChange={handleCommentChange}
-        placeholder="내용을 작성하세요..."
+        placeholder="내용을 작성하세요"
       />
       <div className="comment-actions">
-        <button onClick={handleSubmit}>팔로워에게만 허용</button>
         <button>스레드 완료</button>
       </div>
     </div>

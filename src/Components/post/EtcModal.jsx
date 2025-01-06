@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { updateDoc, doc } from "firebase/firestore";
 import { db, storage } from "../../firebase";
-import { CameraIcon, PictureIcon } from "../Common/Icon";
+import { PictureIcon } from "../Common/Icon";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import Loading from "../Loading";
+import Loading from "../LoadingLogo/Loading";
 
 const AllWrapp = styled.div`
   /* position: relative;  */
@@ -204,21 +204,24 @@ const CharacterCount = styled.div`
 const EtcModal = ({
   onSave,
   post,
-  photos,
+  photos = [], // 기본값 설정
   id,
   onCancel,
   setIsEtcModalOpen,
 }) => {
   const [newContent, setNewContent] = useState(post); // 수정할 내용을 상태로 관리
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([]); // 새로운 파일
+  const [existingPhotos, setExistingPhotos] = useState(photos); // 기존 사진 관리
   const [isLoading, setIsLoading] = useState(false);
+
+  const maxFilesCount = 3;
 
   const handleSave = async () => {
     try {
       setIsLoading(true);
       let newFileUrls = [];
 
-      // 선택된 파일이 있으면 Firebase Storage에 업로드
+      // 새로운 파일 업로드
       if (files.length > 0) {
         for (const file of files) {
           const fileRef = ref(storage, `posts/${id}/${file.name}`);
@@ -232,22 +235,27 @@ const EtcModal = ({
       const postRef = doc(db, "contents", id);
       await updateDoc(postRef, {
         post: newContent,
-        photos: newFileUrls.length > 0 ? newFileUrls : photos, // 새로운 사진이 있으면 업데이트
+        photos: [...existingPhotos, ...newFileUrls], // 기존 사진 + 새로운 파일 URL
       });
 
       onSave(newContent);
       setIsEtcModalOpen(false); // 모달 닫기
     } catch (error) {
+      console.error("Error saving post:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const maxFileSize = 5 * 1024 * 1024; // 5MB
-  const maxFilesCount = 3;
-
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
+
+    // 현재 업로드된 파일 수 + 새로 선택한 파일 수가 최대 파일 수를 초과하지 않도록 제한
+    if (files.length + selectedFiles.length > maxFilesCount) {
+      alert(`최대 ${maxFilesCount}개의 파일만 업로드할 수 있습니다.`);
+      return;
+    }
+
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
   };
 
@@ -255,82 +263,51 @@ const EtcModal = ({
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
-  const [charCount, setCharCount] = useState(post.length || 0); // 글자 수 상태 관리
+  const removeExistingPhoto = (index) => {
+    setExistingPhotos((prevPhotos) => prevPhotos.filter((_, i) => i !== index));
+  };
+
   const handleContentChange = (e) => {
     const content = e.target.value;
     setNewContent(content);
-    setCharCount(content.length); // 글자 수 업데이트
   };
 
   return (
     <AllWrapp>
-      {/* 어두운 배경을 클릭하면 모달이 닫히도록 설정 */}
       <ModalOverlay>
-        {/* ModalWrapper는 ModalOverlay 안에 위치하여 화면 중앙에 배치됩니다 */}
         <ModalWrapper onClick={(e) => e.stopPropagation()}>
           <TextAreaWrapper>
-            <CharacterCount>{charCount}자 입력중..</CharacterCount>{" "}
-            {/* 글자 수 표시 */}
+            <CharacterCount>{newContent.length}자 입력 중</CharacterCount>
             <TextArea
-              value={newContent || ""} // newContent가 undefined일 때 빈 문자열로 처리
-              onChange={(e) => {
-                const content = e.target.value;
-                setNewContent(content); // 입력된 내용을 업데이트
-                setCharCount(content.length); // 글자 수 업데이트
-              }}
-              placeholder="내용을 입력하세요 ..."
+              value={newContent || ""}
+              onChange={handleContentChange}
+              placeholder="내용을 입력하세요"
             />
           </TextAreaWrapper>
           <PlusImage>
+            {existingPhotos.map((photo, index) => (
+              <div key={index} style={{ position: "relative", margin: "5px" }}>
+                <Img src={photo} alt={`Existing Photo ${index + 1}`} />
+                <DeleteButton onClick={() => removeExistingPhoto(index)}>
+                  X
+                </DeleteButton>
+              </div>
+            ))}
+
             {files.map((file, index) => (
               <div key={index} style={{ position: "relative", margin: "5px" }}>
                 {file.type.startsWith("image/") ? (
                   <Img
                     src={URL.createObjectURL(file)}
                     alt={`Uploaded Preview ${index + 1}`}
-                    style={{}}
                   />
-                ) : file.type.startsWith("video/") ? (
-                  <video
-                    controls
-                    style={{
-                      width: "120px",
-                      height: "120px",
-                      borderRadius: "10px",
-                      objectFit: "cover",
-                    }}
-                  >
-                    <source src={URL.createObjectURL(file)} />
-                  </video>
-                ) : (
-                  <audio
-                    controls
-                    src={URL.createObjectURL(file)}
-                    style={{
-                      width: "140px", // 오디오 컨트롤러의 너비를 이미지/비디오와 맞춤
-                      height: "40px", // 오디오 컨트롤러의 높이 설정
-                      borderRadius: "10px", // 일관성을 위해 오디오에도 경계 반경 적용
-                      objectFit: "contain",
-                    }}
-                  >
-                    Your browser does not support the audio element.
-                  </audio>
-                )}
+                ) : null}
                 <DeleteButton onClick={() => removeFile(index)}>X</DeleteButton>
               </div>
             ))}
           </PlusImage>
           <Buttons>
             <Icons>
-              <CameraButton htmlFor="camera">
-                <CameraIcon width={36} />
-                <CameraInput
-                  onChange={handleFileChange}
-                  id="camera"
-                  type="file"
-                  accept="video/*, image/*"
-                />
-              </CameraButton>
               <PictureButton htmlFor="picture">
                 <PictureIcon width={24} />
                 <PictureInput
@@ -338,6 +315,7 @@ const EtcModal = ({
                   id="picture"
                   type="file"
                   accept="video/*, image/*"
+                  multiple // 한 번에 여러 파일을 선택
                 />
               </PictureButton>
             </Icons>
@@ -346,9 +324,7 @@ const EtcModal = ({
                 {isLoading ? <Loading /> : null}
                 저장
               </UploadButton>
-              <DelButton cancel onClick={onCancel}>
-                취소
-              </DelButton>
+              <DelButton onClick={onCancel}>취소</DelButton>
             </EditButton>
           </Buttons>
         </ModalWrapper>

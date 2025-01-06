@@ -4,13 +4,7 @@ import { useLocation } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
-import {
-  HeartIcon,
-  DmIcon,
-  RetweetIcon,
-  Coment,
-  UserIcon2,
-} from "../Components/Common/Icon";
+import { HeartIcon, Coment, UserIcon2 } from "../Components/Common/Icon";
 import BackBtn from "../Components/post/BackBtn";
 import {
   collection,
@@ -18,8 +12,9 @@ import {
   orderBy,
   query,
   doc,
-  deleteDoc,
+  onSnapshot,
   getDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../Contexts/AuthContext";
@@ -65,16 +60,11 @@ const BoederWrapper = styled.div`
 `;
 
 const PostWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  left: 0px;
+  padding: 20px 40px;
   width: 100%;
-  height: auto;
   display: flex;
   flex-direction: column;
   background: ${(props) => props.theme.borderColor};
-  padding: 40px;
-  border-radius: 40px 40px 0 0;
   border-bottom: 1px solid ${(props) => props.theme.comentBouttomLine};
   z-index: 20;
   @media (max-width: 768px) {
@@ -86,18 +76,20 @@ const PostWrapper = styled.div`
 `;
 const Header = styled.div`
   width: 100%;
+  height: 100px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  padding: 0 10px;
+  gap: 20px;
 `;
 const UserImage = styled.img`
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border: none;
   border-radius: 50%;
 `;
 const Username = styled.span`
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: ${(props) => props.theme.fontcolor};
 `;
@@ -111,6 +103,8 @@ const Posted = styled.div`
   font-weight: 600;
   margin-top: 8px;
   margin-bottom: 5px;
+  padding-left: 30px;
+  line-height: 1.4;
 `;
 const ColumnWrapper = styled.div`
   display: flex;
@@ -148,6 +142,7 @@ const Video = styled.video`
   }
 `;
 const Icons = styled.div`
+  padding-left: 30px;
   display: flex;
   gap: 0px;
   justify-content: start;
@@ -187,11 +182,12 @@ const CommentsList = styled.div`
 `;
 
 const CommentWrapper = styled.div`
+  border-bottom: 1px solid ${(props) => props.theme.borderstroke};
   width: 100%;
   height: auto;
   background: ${(props) => props.theme.borderColor};
   padding: 15px;
-  border-bottom: 1px solid ${(props) => props.theme.comentBouttomLine};
+
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease-out;
@@ -203,19 +199,19 @@ const CommentWrapper = styled.div`
 const CommentHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
   margin-left: 40px;
   @media (max-width: 768px) {
     margin-left: 14px;
   }
 `;
 const CommentUserImage = styled.img`
-  width: 34px;
-  height: 34px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
 `;
 const CommentUsername = styled.span`
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: ${(props) => props.theme.fontcolor};
 `;
@@ -233,17 +229,15 @@ const DeletAll = styled.div`
   justify-content: center;
 `;
 const DeletComment = styled.div`
+  padding-right: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 18px;
-  width: 34px;
-  height: 100%;
-  border-radius: 50%;
+
   transition: all 0.2s;
   cursor: pointer;
   &:hover {
-    opacity: 0.3;
+    opacity: 0.6;
   }
 `;
 const DeletIcon = styled.img`
@@ -251,17 +245,20 @@ const DeletIcon = styled.img`
   width: 16px;
 `;
 const CometdescAll = styled.div`
-  margin: 10px 0 0 8%;
-  border-left: 2px solid ${(props) => props.theme.borderstroke};
   padding: 10px 0;
+  padding-left: 10px;
   @media (max-width: 768px) {
-    margin: 10px 0 0 8%;
+  }
+  @media (max-width: 500px) {
   }
 `;
 const CommentContent = styled.div`
+  width: 500px;
   font-size: 14px;
   color: ${(props) => props.theme.fontcolor};
-  margin-left: 30px;
+  font-weight: 600;
+  margin-left: 90px;
+  line-height: 1.4;
 `;
 const CommentImage = styled.img`
   width: 120px;
@@ -305,24 +302,24 @@ const PostComment = () => {
   const navigate = useNavigate();
 
   const {
-    postId,
-    userId,
-    id,
-    postContent,
-    photos,
-    videos,
-    username,
-    createdAt,
-    likes: passedLikes,
-    dms: passedDms,
-    retweets: passedRetweets,
+    postId = "",
+    userId = "",
+    id = "",
+    postContent = "",
+    photos = [],
+    videos = [],
+    username = "",
+    createdAt = { seconds: Date.now() / 1000 },
+    likes: passedLikes = 0,
+    dms: passedDms = 0,
+    retweets: passedRetweets = 0,
   } = location.state || {};
 
   useEffect(() => {
     const getUserProfileImage = async () => {
       try {
         const imgUrl = await fetchUserProfileImage(userId); // 프로필 이미지 가져오기
-        setProfileImg(imgUrl || ""); // 이미지가 없으면 빈 값
+        setProfileImg(imgUrl || "");
       } catch (error) {}
     };
 
@@ -365,10 +362,11 @@ const PostComment = () => {
 
         setComments(commentsList); // 댓글 리스트 저장
         setCommentsCount(commentsList.length);
+
         const profileImagesMap = {};
         for (let comment of commentsList) {
           const profileImg = await fetchUserProfileImage(comment.userId);
-          profileImagesMap[comment.userId] = profileImg || ""; // 프로필 이미지가 없으면 빈 문자열
+          profileImagesMap[comment.userId] = profileImg || "";
         }
         setProfileImages(profileImagesMap);
       } catch (error) {}
@@ -422,18 +420,72 @@ const PostComment = () => {
       } catch (error) {}
     };
 
-    fetchPostOwner(); // 포스트 작성자의 ID 가져오기
+    fetchPostOwner();
   }, [id]); // id가 변경될 때마다 실행
+
+  // Firestore에서 데이터 실시간 가져오기
+  useEffect(() => {
+    const postRef = doc(db, "contents", postId);
+    const unsubscribe = onSnapshot(postRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const postData = snapshot.data();
+        setLikes(postData.likes || 0);
+        setDms(postData.dms || 0);
+      } else {
+        console.error("Post does not exist!");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [postId]);
+
+  // 좋아요
+  const handleToggleLike = async () => {
+    const postRef = doc(db, "contents", postId);
+    const postSnapshot = await getDoc(postRef);
+
+    if (postSnapshot.exists()) {
+      const postData = postSnapshot.data();
+      const likesBy = postData.likesBy || []; // undefined일 경우 빈 배열로 초기화
+
+      if (likesBy.includes(currentUser.uid)) {
+        await updateDoc(postRef, {
+          likes: likes - 1,
+          likesBy: arrayRemove(currentUser.uid),
+        });
+        setLikes((prevLikes) => prevLikes - 1);
+      } else {
+        await updateDoc(postRef, {
+          likes: likes + 1,
+          likesBy: arrayUnion(currentUser.uid),
+        });
+        setLikes((prevLikes) => prevLikes + 1);
+      }
+    }
+  };
+
+  // 댓글
+  const handleAddComment = async (newComment) => {
+    const commentsRef = collection(db, "contents", postId, "comments");
+    await addDoc(commentsRef, {
+      ...newComment,
+      createdAt: serverTimestamp(),
+    });
+    setCommentsCount((prevCount) => prevCount + 1);
+  };
 
   const handleDeleteComment = async (commentId) => {
     try {
       const commentRef = doc(db, "contents", postId, "comments", commentId);
-      await deleteDoc(commentRef); // Firebase에서 댓글 삭제
+      await deleteDoc(commentRef);
+
       setComments((prevComments) =>
         prevComments.filter((comment) => comment.id !== commentId)
-      ); // UI에서 삭제된 댓글 제거
-      setCommentsCount((prevCount) => prevCount - 1); // 댓글 수 감소
-    } catch (error) {}
+      );
+      setCommentsCount((prevCount) => prevCount - 1);
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+    }
   };
 
   return (
@@ -448,7 +500,7 @@ const PostComment = () => {
               {profileImg ? (
                 <UserImage src={profileImg} alt="User Profile"></UserImage>
               ) : (
-                <UserIcon2 />
+                <UserIcon2 width={50} />
               )}
               <Username>{username}</Username>
               <Timer>{renderTimeAgo()}</Timer>
@@ -477,17 +529,11 @@ const PostComment = () => {
               </Column>
             </ColumnWrapper>
             <Icons>
-              <IconWrapper>
+              <IconWrapper onClick={handleToggleLike}>
                 <HeartIcon width={20} /> {likes}
               </IconWrapper>
               <IconWrapper>
-                <Coment width={20} /> {commentsCount}
-              </IconWrapper>
-              <IconWrapper>
-                <RetweetIcon width={20} /> {retweets}
-              </IconWrapper>
-              <IconWrapper>
-                <DmIcon width={18} /> {dms}
+                <Coment width={20} onClick={handleAddComment} /> {commentsCount}
               </IconWrapper>
             </Icons>
           </PostWrapper>
@@ -498,10 +544,22 @@ const PostComment = () => {
                   <CommentsList>
                     <CommentWrapper key={comment.id}>
                       <CommentHeader>
-                        <CommentUserImage
-                          src={profileImages[comment.userId]}
-                          alt="User Profile"
-                        ></CommentUserImage>
+                        {profileImg ? (
+                          <UserImage
+                            onClick={() => {
+                              navigate({
+                                pathname: "/profile",
+                                search: `${createSearchParams({
+                                  email: email,
+                                })}`,
+                              });
+                            }}
+                            src={profileImg}
+                            alt="User Profile"
+                          ></UserImage>
+                        ) : (
+                          <UserIcon2 width={40} />
+                        )}
                         <CommentUsername>{comment.username}</CommentUsername>
                         <CommentTimer>
                           {formatDistanceToNow(

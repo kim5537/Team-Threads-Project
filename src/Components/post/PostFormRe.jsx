@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import {
@@ -7,17 +6,12 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import { auth, db, storage } from "../firebase";
+import { auth, db, storage } from "../../firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
-import {
-  CameraIcon,
-  PictureIcon,
-  MicIcon,
-  HashtagIcon,
-} from "../Components/Common/Icon";
-import { useAuth } from "../Contexts/AuthContext";
-import Loading from "./Loading";
+import { CameraIcon, PictureIcon, MicIcon, HashtagIcon } from "../Common/Icon";
+import { useAuth } from "../../Contexts/AuthContext";
+import Loading from "../logo/Loading";
 
 // Styled Components
 const Wrapper = styled.div`
@@ -201,9 +195,9 @@ const PostForm = () => {
   const [post, setPost] = useState(""); // 게시글 상태
   const [files, setFiles] = useState([]); // 파일 상태
   const [audioBlob, setAudioBlob] = useState(null); // 녹음 파일 상태
+  const [audioURL, setAudioURL] = useState(null); // 녹음 파일 미리보기 URL 상태
   const [isRecording, setIsRecording] = useState(false); // 녹음 중 상태
   const mediaRecorderRef = useRef(null); // MediaRecorder 참조
-
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -226,23 +220,19 @@ const PostForm = () => {
   };
 
   const handleFileChange = (e) => {
-    const selectedFiles = e.target.files;
-    if (selectedFiles) {
-      const newFiles = Array.from(selectedFiles).filter((file) => {
-        if (file.size > maxFileSize) {
-          alert("The maximum file size is 5MB.");
-          return false;
-        }
-        return true;
-      });
-
-      if (files.length + newFiles.length > maxFilesCount) {
-        alert(`You can upload a maximum of ${maxFilesCount} files.`);
-        return;
-      }
-
-      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    const selectedFiles = Array.from(e.target.files);
+    if (files.length + selectedFiles.length > maxFilesCount) {
+      alert(`최대 ${maxFilesCount}개의 파일만 업로드할 수 있습니다.`);
+      return;
     }
+    const validFiles = selectedFiles.filter((file) => {
+      if (file.size > maxFileSize) {
+        alert("파일 크기는 5MB를 초과할 수 없습니다.");
+        return false;
+      }
+      return true;
+    });
+    setFiles((prevFiles) => [...prevFiles, ...validFiles]);
   };
 
   const removeFile = (index) => {
@@ -258,7 +248,9 @@ const PostForm = () => {
       setIsRecording(true);
 
       mediaRecorder.ondataavailable = (e) => {
+        const url = URL.createObjectURL(e.data);
         setAudioBlob(e.data); // 녹음 완료 시 audioBlob에 데이터 저장
+        setAudioURL(url); // 미리보기용 URL 생성
       };
     });
   };
@@ -274,11 +266,6 @@ const PostForm = () => {
     const user = auth.currentUser;
     if (!user || isLoading || post === "" || post.length > 180) return;
 
-    const randomLikes = Math.floor(Math.random() * 100);
-    const randomComments = Math.floor(Math.random() * 10);
-    const randomDms = Math.floor(Math.random() * 50);
-    const randomRetweets = Math.floor(Math.random() * 5);
-
     try {
       setIsLoading(true);
 
@@ -288,10 +275,10 @@ const PostForm = () => {
         username: user?.displayName || "Anonymous",
         userId: user.uid,
         email: user.email,
-        likes: randomLikes,
-        comments: randomComments,
-        dms: randomDms,
-        retweets: randomRetweets,
+        likes: 0, // 초기값 0
+        comments: 0, // 초기값 0
+        dms: 0, // 초기값 0
+        retweets: 0, // 초기값 0
       });
 
       const photoUrls = [];
@@ -351,7 +338,7 @@ const PostForm = () => {
             value={post}
             name="contents"
             id="contents"
-            placeholder="내용을 작성하세요.."
+            placeholder="내용을 작성하세요"
             required
           />
           <PlusImage>
@@ -404,8 +391,6 @@ const PostForm = () => {
                 accept="video/*, image/*"
               />
             </PictureButton>
-            {/* 녹음 기능 */}
-            <MicIcon width={24} />
 
             {!isRecording ? (
               <button type="button" onClick={startRecording}>
@@ -416,14 +401,20 @@ const PostForm = () => {
                 녹음 중지
               </button>
             )}
-            <HashtagIcon width={24} />
           </Icons>
+          {/* 녹음 완료된 오디오 미리보기 */}
+          {audioURL && (
+            <div>
+              <audio controls src={audioURL} style={{ width: "100%" }}>
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          )}
           <Buttons>
-            <OpenButton>팔로워에게만 허용</OpenButton>
             <SubmitBtn
               text="스레드 업로드"
               type="submit"
-              value={isLoading ? "Posting..." : "Post"}
+              value={isLoading ? "Posting" : "Post"}
             />
           </Buttons>
         </Form>

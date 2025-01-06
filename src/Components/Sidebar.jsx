@@ -292,7 +292,7 @@ const Sidebar = () => {
   };
 
   const onLogOut = async () => {
-    const ok = confirm("정말 로그아웃 하시겠습니까?");
+    const ok = confirm("로그아웃 하시겠습니까?");
 
     if (ok) {
       await auth.signOut();

@@ -86,16 +86,7 @@ const UserInfo = styled.p`
     white-space: normal;
   }
 `;
-const UserFollowerNum = styled.p`
-  font-size: 12px;
-  color: ${(props) => props.theme.fontcolor};
-  @media (max-width: 768px) {
-    font-size: 11px;
-  }
-  @media (max-width: 480px) {
-    font-size: 10px;
-  }
-`;
+
 const FollowerButton = styled.button`
   flex: 0 0 auto;
   width: 110px;
@@ -121,29 +112,29 @@ const FollowerButton = styled.button`
   }
 `;
 const FollowerItem = ({ follower, toggleFollow, onProfileClick }) => {
-  const { ProfileImg, userEmail, bio, followNum, isFollowing } = follower;
+  const { img, userEmail, bio, isFollowing } = follower;
 
   return (
     <FollowerContain onClick={onProfileClick}>
       <Wrapper>
         <UserWrapper>
-          {ProfileImg ? (
-            <img src={ProfileImg} alt="User profile" />
+          {img ? (
+            <img src={img} alt={`${userEmail || "사용자"}의 프로필 이미지`} />
           ) : (
             <UserIcon2 width={50} height={50} />
           )}
         </UserWrapper>
         <UserContex>
-          <UserName>{userEmail || "zang@ezen.com"}</UserName>
-          <UserInfo>{bio}</UserInfo>
-          <UserFollowerNum>{`팔로워 ${followNum}명`}</UserFollowerNum>
+          <UserName>{userEmail || "알 수 없는 사용자"}</UserName>
+          <UserInfo>{bio || "소개글이 없습니다."}</UserInfo>
         </UserContex>
       </Wrapper>
+
       <FollowerButton
         isFollowing={isFollowing}
         onClick={(e) => {
-          e.stopPropagation(); // 상위 이벤트 전달 x
-          toggleFollow();
+          e.stopPropagation(); // 상위 클릭 이벤트 전파 방지
+          toggleFollow(); // 팔로우 상태 변경 함수 호출
         }}
       >
         {isFollowing ? "팔로잉" : "팔로우"}
@@ -151,4 +142,5 @@ const FollowerItem = ({ follower, toggleFollow, onProfileClick }) => {
     </FollowerContain>
   );
 };
+
 export default FollowerItem;

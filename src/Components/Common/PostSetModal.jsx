@@ -147,8 +147,8 @@ const PostSetModal = ({
             <TopRec></TopRec>
             <Optionwrapper>
               {isAuthor && <Li onClick={onDelete}>삭제</Li>}
-              <Li onClick={() => toggleShowing()}>신고하기</Li>
               {isAuthor && <Li onClick={onEdit}>수정</Li>}
+              <Li onClick={() => toggleShowing()}>신고하기</Li>
             </Optionwrapper>
             <UpLoadButton onClick={onClose}>닫기</UpLoadButton>
           </Contentswrapper>

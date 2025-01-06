@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { auth, db, storage } from "../firebase";
+import { auth, db, storage } from "../../firebase";
 import {
   deleteDoc,
   doc,
@@ -18,34 +18,36 @@ import {
   EtcIcon,
   Coment,
   UserIcon2,
-} from "./Common/Icon";
+} from "../Common/Icon";
 
 import { createSearchParams, useNavigate } from "react-router-dom";
 // Styled Components
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import PostSetModal from "./Common/PostSetModal";
-import AudioMessage from "./AudioMessage";
-import EtcModal from "./post/EtcModal";
-import fetchUserProfileImage from "../Utils/fetchProfile";
-import PostCommentModal from "../Pages/PostComment";
+import PostSetModal from "../Common/PostSetModal";
+import AudioMessage from "../Audio/AudioMessage";
+import EtcModal from "./EtcModal";
+import fetchUserProfileImage from "../../Utils/fetchProfile";
+import PostCommentModal from "../../Pages/PostComment";
+import CoModal from "./CoModal";
+import ImageModal from "./ImageModal";
 
 const Wrapper = styled.div`
   position: relative;
   width: 100%;
   height: auto;
-  padding: 20px;
-  margin-bottom: 4px;
+  padding: 30px 40px;
+  margin-bottom: 10px;
   display: flex;
-  /* border-radius: 30px; */
+  border-radius: 30px;
   flex-direction: column;
   background: ${(props) => props.theme.borderColor};
-  border-bottom: 1px solid ${(props) => props.theme.borderstroke};
-
   @media (max-width: 768px) {
-    margin-top: 10px;
-    padding: 12px;
     width: 100%;
+    height: auto;
+    border-radius: 0px;
+    padding: 30px;
+    margin-bottom: 0px;
   }
 `;
 const ColumnWrapper = styled.div`
@@ -63,7 +65,7 @@ const Column = styled.div`
 const Photo = styled.img`
   width: 160px;
   height: 160px;
-  object-fit: cover/contain;
+  object-fit: cover;
   margin-left: 0px;
   border-radius: 8px;
   @media (max-width: 768px) {
@@ -128,6 +130,8 @@ const Payload = styled.p`
   font-weight: 600;
   margin-left: 0px;
   margin-bottom: 5px;
+  line-height: 1.4;
+  padding-right: 15px;
 `;
 
 const Icons = styled.div`
@@ -138,34 +142,6 @@ const Icons = styled.div`
   margin-top: 10px;
   cursor: pointer;
   color: #bababa;
-`;
-
-const DeleteButton = styled.button`
-  background: #ff6347;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  cursor: pointer;
-`;
-
-const EditorColumns = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-const EditButton = styled.button`
-  background: #7f8689;
-  color: #fff;
-  font-weight: 600;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  text-transform: uppercase;
-  cursor: pointer;
 `;
 
 const IconWrapper = styled.div`
@@ -211,6 +187,7 @@ const EditPostFormTextArea = styled.textarea`
   font-size: 16px;
   border-radius: 10px;
   resize: none;
+
   &::placeholder {
     opacity: 1;
     transition: opacity 0.3s;
@@ -223,49 +200,8 @@ const EditPostFormTextArea = styled.textarea`
     border: 1px solid #1d9bf0;
   }
 `;
-const CancelButton = styled.button`
-  background: #7f8689;
-  color: #fff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  text-transform: uppercase;
-  cursor: pointer;
-`;
-const UpdateButton = styled.button`
-  background: #1d9bf0;
-  color: #fff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  text-transform: uppercase;
-  cursor: pointer;
-`;
 
-const SetContentButton = styled.label`
-  color: #fff;
-  transition: color 0.3s;
-
-  &:hover {
-    color: #1d9bf0;
-  }
-
-  svg {
-    width: 24px;
-    cursor: pointer;
-  }
-`;
-
-const SetContentInputButton = styled.input`
-  display: none;
-`;
-
-const BorderBottom = styled.div`
-  margin: 10px 0;
-  border: 1px solid #ccc;
-`;
-
-const Post2 = ({
+const Post = ({
   post,
   userId,
   photos,
@@ -280,10 +216,9 @@ const Post2 = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedPhoto, setEditedPhoto] = useState(null);
   const [commentsCount, setCommentsCount] = useState(0); // 댓글 수 상태 추가
-  const [likes, setLikes] = useState(Math.floor(Math.random() * 100));
+  const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [dms, setDms] = useState(Math.floor(Math.random() * 50));
-  const [isDms, setIsDms] = useState(false);
   const [retweets, setRetweets] = useState(2);
   const [isRetweets, setIsRetweets] = useState(false);
   const [openModalId, setOpenModalId] = useState(null);
@@ -292,16 +227,19 @@ const Post2 = ({
   const navigate = useNavigate();
   const [profileImg, setProfileImg] = useState("");
   const [isCopied, setIsCopied] = useState(false);
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [isImgModalOpen, setIsImgModalOpen] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [mediaType, setMediaType] = useState(null);
 
   useEffect(() => {
     const getUserProfileImage = async () => {
       try {
-        const imgUrl = await fetchUserProfileImage(userId); // 프로필 이미지 가져오기
-        setProfileImg(imgUrl || ""); // 이미지가 없으면 빈 값
+        const imgUrl = await fetchUserProfileImage(userId);
+        setProfileImg(imgUrl || "");
       } catch (error) {}
     };
 
-    // userId가 있을 때만 프로필 이미지 가져오기
     if (userId) {
       getUserProfileImage();
     }
@@ -310,14 +248,14 @@ const Post2 = ({
   // const user = auth.currentUser;
 
   const renderTimeAgo = () => {
-    if (!createdAt || !createdAt.seconds) return "방금 전"; // createdAt가 유효하지 않을 때 처리
+    if (!createdAt || !createdAt.seconds) return "방금 전";
     const date = new Date(createdAt.seconds * 1000);
     return formatDistanceToNow(date, { addSuffix: true, locale: ko });
   };
 
   //PostSetModal
   const openModal = (postId) => {
-    setOpenModalId(postId); // 특정 포스트의 ID로 모달 열기
+    setOpenModalId(postId);
   };
   const closeModal = () => {
     setOpenModalId(null);
@@ -332,6 +270,19 @@ const Post2 = ({
     setIsEtcModalOpen(false);
   };
 
+  // Img Modal
+  const handleMediaClick = (mediaUrl, type) => {
+    setSelectedMedia(mediaUrl); // 클릭된 미디어 URL 설정
+    setMediaType(type); // 미디어 타입 설정
+    setIsImgModalOpen(true); // 모달 열기
+  };
+
+  const handleCloseModal = () => {
+    setIsImgModalOpen(false); // 모달 닫기
+    setSelectedMedia(null); // 선택된 미디어 초기화
+    setMediaType(null); // 미디어 타입 초기화
+  };
+
   const handleClickOutside = (e) => {
     if (openModalId && !e.target.closest(".modal-content")) {
       closeModal();
@@ -340,7 +291,7 @@ const Post2 = ({
 
   useEffect(() => {
     if (!id) {
-      return; // id가 유효하지 않으면 바로 return
+      return;
     }
 
     const fetchPostAndCommentsData = async () => {
@@ -377,9 +328,8 @@ const Post2 = ({
     };
 
     fetchPostAndCommentsData();
-  }, [id, likes, dms, retweets]); // 의존성 배열에 필요한 상태 추가
+  }, [id, likes, dms, retweets]);
 
-  // 모달 외부 클릭 감지 이벤트 등록
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -388,10 +338,6 @@ const Post2 = ({
   }, [openModalId]);
 
   const user = auth.currentUser;
-
-  // const onChange = (e) => {
-  //   setEditedPost(e.target.value);
-  // };
 
   const handleClose = () => {
     setIsEditing(false);
@@ -404,7 +350,7 @@ const Post2 = ({
     }
   };
   const onDelete = async () => {
-    if (confirm("정말 이 글을 삭제하시겠습니까?") && user?.uid === userId) {
+    if (confirm("이 글을 삭제하시겠습니까?") && user?.uid === userId) {
       try {
         await deleteDoc(doc(db, "contents", id));
         if (photos.length > 0) {
@@ -417,46 +363,8 @@ const Post2 = ({
     }
   };
 
-  // const onUpdate = async () => {
-  //   try {
-  //     if (user?.uid !== userId) return;
-
-  //     const postDoc = await getDoc(doc(db, "contents", id));
-  //     if (!postDoc.exists()) throw new Error("Documents does not exist");
-
-  //     if (editedPhoto) {
-  //       const newFileType = editedPhoto.type.startsWith("image/")
-  //         ? "image"
-  //         : "video";
-
-  //       const locationRef = ref(storage, `contents/${user.uid}/${id}`);
-  //       const uploadTask = uploadBytesResumable(locationRef, editedPhoto);
-  //       if (editedPhoto.size >= 5 * 1024 * 1024) {
-  //         uploadTask.cancel();
-  //         throw new Error("File Size is over 5MB");
-  //       }
-  //       const result = await uploadBytes(locationRef, editedPhoto);
-  //       const url = await getDownloadURL(result.ref);
-
-  //       await updateDoc(doc(db, "contents", id), {
-  //         post: editedPost,
-  //         photo: newFileType === "image" ? url : "",
-  //         video: newFileType === "video" ? url : "",
-  //         fileType: newFileType,
-  //       });
-  //     } else {
-  //       await updateDoc(doc(db, "contents", id), { post: editedPost });
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   } finally {
-  //     setIsEditing(false); // 수정 완료 후 입력창 닫기
-  //   }
-  // };
-
   const handleSave = (updatedContent) => {
     setEditedPost(updatedContent);
-    // 추가적으로 필요한 업데이트 로직
   };
 
   const handleLike = async () => {
@@ -473,23 +381,29 @@ const Post2 = ({
     setIsLiked((prevLiked) => !prevLiked);
   };
 
-  const handleCommentClick = () => {
-    navigate("/Comment/${id}", {
-      state: {
-        postId: id,
-        postContent: post,
-        photos,
-        videos,
-        username,
-        createdAt: createdAt || { seconds: Date.now() / 1000 },
-        likes,
-        dms,
-        retweets,
-        userId,
-      },
-    });
+  const openCommentModal = () => {
+    setCommentModalOpen(true); // 특정 포스트의 ID로 모달 열기
   };
+  const closeCommentModal = async () => {
+    setCommentModalOpen(false);
 
+    try {
+      // Firestore에서 댓글 수를  가져오기
+      const commentsRef = collection(db, "contents", postId, "comments");
+      const commentsSnapshot = await getDocs(commentsRef);
+      // 스냅샷에서 댓글 수 가져와 상태 업데이트
+      const newCommentsCount = commentsSnapshot.size;
+      setCommentsCount(newCommentsCount);
+    } catch (error) {}
+  };
+  const handleCommentSubmitSuccess = async () => {
+    try {
+      const commentsRef = collection(db, "contents", id, "comments");
+      const commentsSnapshot = await getDocs(commentsRef);
+      setCommentsCount(commentsSnapshot.size); // 새로운 댓글 수를 상태로 업데이트
+      setCommentModalOpen(false); // 댓글 추가 후 모달 닫기
+    } catch (error) {}
+  };
   const PostCommentClick = () => {
     navigate("/PostComment/${id}", {
       state: {
@@ -540,15 +454,26 @@ const Post2 = ({
 
     if (isRetweets) {
       setRetweets((prevRet) => prevRet - 1);
-      await updateDoc(postRef, { retweets: retweets - 1 }); // Firebase에 업데이트
+      await updateDoc(postRef, { retweets: retweets - 1 });
     } else {
       setRetweets((prevRet) => prevRet + 1);
-      await updateDoc(postRef, { retweets: retweets + 1 }); // Firebase에 업데이트
+      await updateDoc(postRef, { retweets: retweets + 1 });
     }
 
     setIsRetweets((prevRet) => !prevRet);
   };
-  useEffect(() => {}, [isEtcModalOpen]);
+  useEffect(() => {
+    // Firestore에서 댓글 수를 가져오기
+    const fetchCommentsCount = async () => {
+      try {
+        const commentsRef = collection(db, "contents", id, "comments");
+        const commentsSnapshot = await getDocs(commentsRef);
+        setCommentsCount(commentsSnapshot.size); // 댓글 개수를 설정
+      } catch (error) {}
+    };
+
+    fetchCommentsCount();
+  }, [id]);
 
   return (
     <>
@@ -599,7 +524,7 @@ const Post2 = ({
               />
             </div>
           )}
-          {/* EtcModal - 수정 모달 */}
+
           {isEtcModalOpen && (
             <EtcModal
               post={post}
@@ -611,6 +536,7 @@ const Post2 = ({
             />
           )}
         </Header>
+
         <Column onClick={PostCommentClick}>
           {isEditing ? (
             <EditPostFormTextArea
@@ -619,12 +545,11 @@ const Post2 = ({
               placeholder={post}
             />
           ) : (
-            <Payload>{post ?? comment}</Payload> // 하나의 Payload만 남겨두기
+            <Payload onClick={PostCommentClick}>{post ?? comment}</Payload>
           )}
         </Column>
-        {/* AudioMessage 컴포넌트를 audioURL이 있을 때만 렌더링 */}
-        <ColumnWrapper onClick={PostCommentClick}>
-          {/* Render multiple photos */}
+
+        <ColumnWrapper>
           {photos && photos.length > 0 && (
             <Column>
               {photos.map((photoUrl, index) => (
@@ -632,6 +557,7 @@ const Post2 = ({
                   key={index}
                   src={photoUrl}
                   alt={`Post Image ${index + 1}`}
+                  onClick={() => handleMediaClick(photoUrl, "image")}
                 />
               ))}
             </Column>
@@ -640,29 +566,56 @@ const Post2 = ({
           {videos && videos.length > 0 && (
             <Column>
               {videos.map((videoUrl, index) => (
-                <Video key={index} controls autoPlay loop src={videoUrl} />
+                <Video
+                  key={index}
+                  controls
+                  autoPlay
+                  loop
+                  src={videoUrl}
+                  onClick={() => handleMediaClick(videoUrl, "video")}
+                />
               ))}
             </Column>
           )}
         </ColumnWrapper>
         <AudioMessage audioURL={audioURL} />
+
         <Icons>
           <IconWrapper onClick={handleLike}>
             <HeartIcon width={20} /> {likes}
           </IconWrapper>
-          <IconWrapper onClick={handleCommentClick}>
+          <IconWrapper onClick={openCommentModal}>
             <Coment width={20} /> {commentsCount}
           </IconWrapper>
-          <IconWrapper onClick={handleRetweetClick}>
-            <RetweetIcon width={20} /> {retweets}
-          </IconWrapper>
-          <IconWrapper onClick={handleDmClick}>
-            <DmIcon width={18} /> {dms}
-          </IconWrapper>
         </Icons>
+        {commentModalOpen && (
+          <CoModal
+            onClose={() => setCommentModalOpen(false)}
+            onSubmitSuccess={handleCommentSubmitSuccess}
+            postId={id}
+            postContent={post}
+            photos={photos}
+            videos={videos}
+            username={username}
+            createdAt={createdAt || { seconds: Date.now() / 1000 }}
+            likes={likes}
+            dms={dms}
+            retweets={retweets}
+            userId={userId}
+            comment={comment}
+          />
+        )}
+
+        {isImgModalOpen && selectedMedia && (
+          <ImageModal
+            mediaUrl={selectedMedia}
+            mediaType={mediaType}
+            onClose={handleCloseModal}
+          />
+        )}
       </Wrapper>
     </>
   );
 };
 
-export default Post2;
+export default Post;

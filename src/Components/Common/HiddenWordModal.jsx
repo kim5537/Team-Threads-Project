@@ -164,6 +164,7 @@ const BackButton = styled.button`
   box-sizing: border-box;
   border: none;
   cursor: pointer;
+
   color: gray; // 초기 색상 설정
   transition: color 0.3s ease; // 색상 전환 효과
 
@@ -201,7 +202,13 @@ const HiddenWordModal = ({
     <Overlay onClick={handleOverlayClick} isMobile={isMobile}>
       <ModalContainer onClick={(e) => e.stopPropagation()} isMobile={isMobile}>
         <TitleLayout>
-          <BackButton onClick={handleOverlayClick}>
+          <BackButton
+            onClick={(e) => {
+              e.stopPropagation();
+
+              onClose && onClose(); // 함수가 존재할 때만 호출
+            }}
+          >
             <LeftArrowIcon size={32} />
           </BackButton>
           <HeadTitle isMobile={isMobile}>숨겨진 단어</HeadTitle>

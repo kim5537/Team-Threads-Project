@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { updateDoc, doc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db, storage, auth } from "../../firebase";
@@ -11,14 +11,14 @@ import {
   CameraIcon,
   PictureIcon,
   MicIcon,
-  HashtagIcon,
+  RecoderIcon,
   UserIcon2,
 } from "../Common/Icon";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useAuth } from "../../Contexts/AuthContext";
 import { getDocs, collection } from "firebase/firestore";
-import Loading from "../Loading";
+import Loading from "../logo/Loading";
 import fetchUserProfileImage from "../../Utils/fetchProfile";
 import { useLocation } from "react-router-dom";
 const AllWrapp = styled.div`
@@ -57,6 +57,7 @@ const PostComentWrapper = styled.div`
   margin-top: 10px;
   border-radius: 40px;
   background: ${(props) => props.theme.borderWrapper};
+
   @media (max-width: 768px) {
     width: 90%;
     height: auto;
@@ -72,6 +73,7 @@ const PostAll = styled.div`
   width: 100%;
   border-radius: 30px;
   height: auto;
+  padding: 0 10px;
   @media (max-width: 768px) {
     width: 100%;
     height: 100%;
@@ -85,6 +87,7 @@ const PostArea = styled.div`
   background: ${(props) => props.theme.borderWrapper};
   height: auto;
   width: 580px;
+  border-bottom: 1px solid rgba(204, 204, 204, 0.4);
   @media (max-width: 768px) {
     width: 100%;
     margin: 0;
@@ -94,12 +97,12 @@ const Header = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
   margin-bottom: 8px;
 `;
 const UserImage = styled.img`
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border: none;
   border-radius: 50%;
 `;
@@ -119,6 +122,7 @@ const Posted = styled.div`
   margin-left: 0px;
   margin-top: 5px;
   margin-bottom: 5px;
+  padding-left: 40px;
 `;
 const ColumnWrapper = styled.div`
   display: flex;
@@ -155,10 +159,11 @@ const Video = styled.video`
 `;
 const PostIcons = styled.div`
   display: flex;
-  gap: 15px;
+  gap: 20px;
   justify-content: start;
   align-items: center;
   margin-left: 30px;
+  padding-left: 40px;
   margin-top: 10px;
   cursor: pointer;
   color: #bababa;
@@ -353,6 +358,7 @@ const Form = styled.form`
   height: 100%;
   gap: 10px;
   border-radius: 40px;
+  padding-top: 20px;
   background: ${(props) => props.theme.borderWrapper};
   @media (max-width: 768px) {
     top: 0;
@@ -396,8 +402,8 @@ const SubmitBtn = styled.input`
   margin-right: 10px;
   transition: all 0.2s;
   &:hover {
-    background: ${(props) => props.theme.mouseHoverBg};
-    color: ${(props) => props.theme.mouseHoverFontcolor};
+    background: ${(props) => props.theme.mouseHoverFontcolor};
+    color: ${(props) => props.theme.mouseHoverBg};
   }
 `;
 const CenBtn = styled.div`
@@ -412,6 +418,14 @@ const CenBtn = styled.div`
     gap: 0px;
   }
 `;
+
+const IconBtn = styled.button`
+  border: 1px solid #f00;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+`;
+
 const CoModal = ({
   userId,
   postId,
@@ -439,8 +453,9 @@ const CoModal = ({
   const location = useLocation();
   const maxFileSize = 5 * 1024 * 1024; // 5MB
   const maxFilesCount = 3;
+  const [isRecording, setIsRecording] = useState(false); // 녹음 상태
+  const mediaRecorderRef = useRef(null); // MediaRecorder 참조
 
-  // Firebase에서 전달된 값을 상태로 설정
   useEffect(() => {
     if (passedLikes) setLikes(passedLikes);
     if (passedDms) setDms(passedDms);
@@ -452,20 +467,19 @@ const CoModal = ({
       try {
         const imgUrl = await fetchUserProfileImage(userId); // 프로필 이미지 가져오기
 
-        setProfileImg(imgUrl || ""); // 이미지가 없으면 빈 값
+        setProfileImg(imgUrl || "");
       } catch (error) {}
     };
 
-    // userId가 있을 때만 프로필 이미지 가져오기
     if (userId) {
       getUserProfileImage();
     }
   }, [userId]);
 
-  // Firestore에서 댓글 데이터를 가져오는 useEffect
+  // Firestore에서 댓글 데이터
   useEffect(() => {
     const fetchComments = async () => {
-      if (!postId) return; // postId가 없을 경우 함수 종료
+      if (!postId) return;
 
       try {
         const commentsCollectionRef = collection(
@@ -558,8 +572,8 @@ const CoModal = ({
       }
 
       await addDoc(commentsRef, commentData);
-      setPost(""); // 상태 초기화
-      setFiles([]); // 업로드 파일 초기화
+      setPost("");
+      setFiles([]);
       onSubmitSuccess();
       // 댓글을 추가한 후 즉시 업데이트
       setComments((prevComments) => [...prevComments, commentData]);
@@ -571,11 +585,40 @@ const CoModal = ({
     }
   };
 
-  const [charCount, setCharCount] = useState(post.length || 0); // 글자 수 상태 관리
+  const [charCount, setCharCount] = useState(post.length || 0); // 글자 수
   const handleContentChange = (e) => {
     const content = e.target.value;
     setNewContent(content);
     setCharCount(content.length); // 글자 수 업데이트
+  };
+
+  const startRecording = () => {
+    if (isRecording) return; // 이미 녹음 중이라면 중복 생성 방지
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setIsRecording(true);
+
+      const chunks = [];
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const audio = new Blob(chunks, { type: "audio/mp3" });
+        setAudioBlob(audio);
+        setFiles((prevFiles) => [
+          ...prevFiles,
+          new File([audio], "recording.mp3", { type: "audio/mp3" }),
+        ]);
+      };
+    });
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
   };
 
   const commentCancle = () => {
@@ -584,9 +627,9 @@ const CoModal = ({
 
   return (
     <AllWrapp>
-      <ModalOverlay>
+      <ModalOverlay onClick={commentCancle}>
         <Title>댓글</Title>
-        <PostComentWrapper>
+        <PostComentWrapper onClick={(e) => e.stopPropagation()}>
           <CenBtn onClick={commentCancle}>취소</CenBtn>
           <PostAll>
             <PostArea>
@@ -594,7 +637,7 @@ const CoModal = ({
                 {profileImg ? (
                   <UserImage src={profileImg} alt="User Profile"></UserImage>
                 ) : (
-                  <UserIcon2 />
+                  <UserIcon2 width={50} />
                 )}
                 <Username>{username}</Username>
                 <Timer>{renderTimeAgo()}</Timer>
@@ -634,23 +677,17 @@ const CoModal = ({
 
               <PostIcons>
                 <IconWrapper>
-                  <HeartIcon width={14} /> {likes}
+                  <HeartIcon width={16} /> {likes}
                 </IconWrapper>
                 <IconWrapper>
-                  <Coment width={14} /> {commentsCount}
-                </IconWrapper>
-                <IconWrapper>
-                  <RetweetIcon width={14} /> {retweets}
-                </IconWrapper>
-                <IconWrapper>
-                  <DmIcon width={12} /> {dms}
+                  <Coment width={16} /> {commentsCount}
                 </IconWrapper>
               </PostIcons>
             </PostArea>
 
             <Form onSubmit={handleSubmit}>
               {isLoading ? <Loading /> : null}
-              <CharacterCount>{charCount}자 입력중..</CharacterCount>
+              <CharacterCount>{charCount}자 입력 중</CharacterCount>
               <TextArea
                 value={post || ""} // 상태를 post로 통일
                 onChange={(e) => {
@@ -660,7 +697,7 @@ const CoModal = ({
                 }}
                 name="contents"
                 id="contents"
-                placeholder="내용을 작성하세요.."
+                placeholder="내용을 작성하세요"
                 required
               />
               <PlusImage>
@@ -702,15 +739,6 @@ const CoModal = ({
               </PlusImage>
               <IconsBtnwrapper>
                 <Icons>
-                  <CameraButton htmlFor="camera">
-                    <CameraIcon width={36} />
-                    <CameraInput
-                      onChange={handleFileChange}
-                      id="camera"
-                      type="file"
-                      accept="video/*, image/*"
-                    />
-                  </CameraButton>
                   <PictureButton htmlFor="picture">
                     <PictureIcon width={24} />
                   </PictureButton>
@@ -720,8 +748,15 @@ const CoModal = ({
                     type="file"
                     accept="video/*, image/*"
                   />
-                  <MicIcon width={24} />
-                  <HashtagIcon width={24} />
+                  {!isRecording ? (
+                    <IconBtn onClick={startRecording}>
+                      <MicIcon width={24} />
+                    </IconBtn>
+                  ) : (
+                    <IconBtn onClick={stopRecording}>
+                      <RecoderIcon width={24} />
+                    </IconBtn>
+                  )}
                 </Icons>
                 <Buttons>
                   <SubmitBtn

@@ -1,5 +1,6 @@
 import { createGlobalStyle } from "styled-components";
 import reset from "styled-reset";
+
 export const lightTheme = {
   logoColor: "#000",
   nomalIconColor: "#BABABA",
