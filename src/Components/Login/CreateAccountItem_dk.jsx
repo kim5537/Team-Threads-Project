@@ -79,6 +79,19 @@ const CreateAccountItemDk = () => {
         following: [], // 초기 팔로잉 배열
         createdAt: new Date(), // 가입 시간
       });
+
+      const profileRef = doc(db, "profile", user.uid);
+      await setDoc(profileRef, {
+        username: user.email,
+        userId: user.uid,
+        userEmail: user.email,
+        bio: "",
+        isLinkPublic: true,
+        isProfilePublic: true,
+        img: "",
+        isFollowing: true,
+        followNum: 0,
+      });
     } catch (error) {}
   };
 
